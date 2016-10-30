@@ -15,7 +15,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var descriptionLabel: UILabel!
   
   /* List of supported unary opeartions */
-  private let supportedUnaryOperations = ["π", "√"];
+  private let supportedUnaryOperations = ["√"];
   
   /* Keeps track of whether or not the user is inputing numbers */
   private var userIsModifying = false
@@ -100,7 +100,7 @@ class ViewController: UIViewController {
      #3) No calculation or chaining has occurred. User has supplied a number and an opeartion
      for the first time.
      
-     #4) User hit "=" or a unary operation such as π or sqrt.
+     #4) User hit "=" or a unary operation such as π or sqrt (while not as part of a chain).
      
      #5) Binary operation is in progress but user hit a unary operator.
      
@@ -129,8 +129,19 @@ class ViewController: UIViewController {
         if (lastNumberPressed == "π") {
           print("last button pressed is \(lastButtonPressed)")
           stringToAppend += lastButtonPressed
-        } else {
-          stringToAppend += lastNumberPressed + " " + lastButtonPressed
+        }
+        else {
+          if (lastButtonPressed == "√") {
+            stringToAppend += lastButtonPressed + "(" + lastNumberPressed + ")"
+          }
+          else {  /* this part has an error!! */
+            if (mostRecentlyPressedUnaryOperation != "√") {
+              stringToAppend += lastNumberPressed + " "
+            }
+            stringToAppend += lastButtonPressed
+            mostRecentlyPressedUnaryOperation = ""
+            print("set mostRecentlyPressedUnary to blank")
+          }
         }
         stringToAppend += " ..."
         
@@ -143,21 +154,21 @@ class ViewController: UIViewController {
         /* User has not chained any operations yet */
         if (lastNumberPressed == "π") {
           stringToAppend += ""
-        } else {
-          stringToAppend += lastNumberPressed
+        }
+        else {
+          if (mostRecentlyPressedUnaryOperation != "√") {
+            print(mostRecentlyPressedUnaryOperation)
+            stringToAppend += lastNumberPressed
+          }
         }
         stringToAppend += " " + lastButtonPressed + " " + "..."
         calculatorModel.description += stringToAppend
-        
-        /* Note: here, lastButtonPressed will be whatever opearand was last pressed */
       }
     }
       /* CASE 4 */
     else {
       print("Case 4: Equals was pressed or Unary operator was pressed");
       if (lastButtonPressed == "π") {
-        print("Last button pressed button prior is PI");
-        /* If "=" was pressed we want "π" to show up and not "3.14159..." */
         stringToAppend = lastButtonPressed
       }
       else if (lastButtonPressed == "√") {
@@ -174,12 +185,15 @@ class ViewController: UIViewController {
       }
         /* Last button pressed is "=" */
       else {
-        if (mostRecentlyPressedUnaryOperation == "π") {
+        print("Equals was pressed")
+        print("Value of most recently pressed unary is \(mostRecentlyPressedUnaryOperation)")
+        if (lastNumberPressed == "π") {
           stringToAppend = ""
-        } else if (mostRecentlyPressedUnaryOperation == "√") {
-          stringToAppend = ""
-        } else {
-          stringToAppend = String(displayValue)
+        }
+        else {
+          if (mostRecentlyPressedUnaryOperation != "√") {
+            stringToAppend = lastNumberPressed
+          }
         }
         stringToAppend += " ="
         mostRecentlyPressedUnaryOperation = ""
@@ -203,6 +217,9 @@ class ViewController: UIViewController {
     userIsModifying = false
     decimalPointExists = false
     descriptionLabel.text = ""
+    mostRecentlyPressedUnaryOperation = ""
+    lastNumberPressed = ""
+    lastButtonPressed = ""
     calculatorModel.clearModel()
   }
 }
